@@ -3,9 +3,27 @@
 This document explains a small, **project-independent** way to cross-compile Rust targets (for example, `x86_64-unknown-linux-musl`) from Windows using Zig as a system linker/sysroot. It also covers alternative tools (`cargo-zigbuild`, `cross`) and troubleshooting tips.
 
 ## Summary ✅
-- Two simple, reusable approaches:
-  1. Create Zig wrapper scripts (linker/ar) in a folder on `PATH` and add a global Cargo config (`%USERPROFILE%\.cargo\config.toml`).
-  2. Use helper tools like `cargo-zigbuild` or `cross` which require less manual setup.
+- Create Zig wrapper scripts (linker/ar) in a folder on `PATH` and add a global Cargo config (`%USERPROFILE%\.cargo\config.toml`).
+
+example Project here:
+
+```powershell
+cargo build --release --target x86_64-unknown-linux-musl
+
+PS D:\workspace\rust\rust-cross-build-w2l-script> cargo build --release --target x86_64-unknown-linux-musl
+   Compiling cfg-if v1.0.4
+   Compiling libc v0.2.178
+   Compiling zerocopy v0.8.31
+   Compiling getrandom v0.2.16
+   Compiling rand_core v0.6.4
+   Compiling ppv-lite86 v0.2.21
+   Compiling rand_chacha v0.3.1
+   Compiling rand v0.8.5
+   Compiling helloworld v0.1.0 (D:\workspace\rust\rust-cross-build-w2l-script)
+    Finished `release` profile [optimized] target(s) in 3.62s
+PS D:\workspace\rust\rust-cross-build-w2l-script> 
+
+```
 
 ---
 
@@ -20,7 +38,7 @@ rustup target add x86_64-unknown-linux-musl
 
 ---
 
-## Option A — Global Cargo config + Zig wrappers (recommended for control)
+Global Cargo config + Zig wrappers (recommended for control)
 
 1. Create a central folder for wrappers (example): `C:\tools\zig-cross\bin` and add it to your Windows `PATH`.
 
@@ -60,29 +78,6 @@ cargo build --release --target x86_64-unknown-linux-musl
 
 ---
 
-## Option B — `cargo-zigbuild` (quick, minimal config)
-
-Install and use:
-
-```powershell
-cargo install cargo-zigbuild
-rustup target add x86_64-unknown-linux-musl
-cargo zigbuild --target x86_64-unknown-linux-musl --release
-```
-
-This uses Zig automatically and avoids per-project or global config edits.
-
----
-
-## Option C — `cross` (uses Docker/qemu, heavier but reproducible)
-
-```powershell
-cargo install cross
-cross build --target x86_64-unknown-linux-musl --release
-```
-
----
-
 ## Troubleshooting & Tips ⚠️
 - "linker not found": ensure wrapper name and location are on `PATH` and match the `linker` setting.
 - Static linking: when targeting `*-musl`, you may need `-C target-feature=+crt-static` (`rustflags`) to avoid dynamic glibc.
@@ -91,12 +86,9 @@ cross build --target x86_64-unknown-linux-musl --release
 
 ---
 
-## Next steps / Useful additions 💡
-- I can add example wrapper scripts directly into this repo under `tools/` (Windows `.cmd` + PowerShell + Unix sh) and a sample global `config.toml` you can copy to `%USERPROFILE%\.cargo\config.toml`.
+If you'd like, use can use the sample scripts and a copyable `config.toml` in this repo.
 
----
-
-If you'd like, I can add the sample scripts and a copyable `config.toml` to this repo and show commands to add them to your `PATH` on Windows.
+An example project is placed here.
 
 
 ![gplv3](https://gnu.ac.cn/graphics/gplv3-rounded-grey-180x60.jpg)
