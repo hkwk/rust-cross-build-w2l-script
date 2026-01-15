@@ -1,7 +1,16 @@
 [package]
-name = "helloworld"
+name = "yy"
 version = "0.1.0"
 edition = "2024"
+description = "Helper CLI to create Zig-based cross-linker wrappers and Cargo config for cross-compiling Rust from Windows to Linux"
+license = "GPL-3.0-or-later"
+readme = "README.md"
+repository = "https://github.com/hkwk/yy"
+keywords = ["cross", "zig", "cross-compilation", "windows", "linux", "musl"]
+categories = ["development-tools"]
 
 [dependencies]
-rand = "0.8"
+clap = { version = "4.3", features = ["derive"] }
+anyhow = "1.0"
+which = "4.2"
+dirs = "5.0"

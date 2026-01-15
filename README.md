@@ -1,94 +1,46 @@
-# Cross-compilation (Windows → Linux using Zig)
+# yy — Zig helper for cross-compiling from Windows to Linux
 
-This document explains a small, **project-independent** way to cross-compile Rust targets (for example, `x86_64-unknown-linux-musl`) from Windows using Zig as a system linker/sysroot. It also covers alternative tools (`cargo-zigbuild`, `cross`) and troubleshooting tips.
+`yy` helps you generate simple Zig wrapper scripts (`zig-<target>.cmd` / `.ps1`) and a Cargo `config.toml` snippet so you can cross-compile Rust projects from Windows using Zig as a linker/sysroot.
 
-## Summary ✅
-- Create Zig wrapper scripts (linker/ar) in a folder on `PATH` and add a global Cargo config (`%USERPROFILE%\.cargo\config.toml`).
+## Quick start ✅
 
-example Project here:
-
-```powershell
-cargo build --release --target x86_64-unknown-linux-musl
-
-PS D:\workspace\rust\rust-cross-build-w2l-script> cargo build --release --target x86_64-unknown-linux-musl
-   Compiling cfg-if v1.0.4
-   Compiling libc v0.2.178
-   Compiling zerocopy v0.8.31
-   Compiling getrandom v0.2.16
-   Compiling rand_core v0.6.4
-   Compiling ppv-lite86 v0.2.21
-   Compiling rand_chacha v0.3.1
-   Compiling rand v0.8.5
-   Compiling helloworld v0.1.0 (D:\workspace\rust\rust-cross-build-w2l-script)
-    Finished `release` profile [optimized] target(s) in 3.62s
-PS D:\workspace\rust\rust-cross-build-w2l-script> 
-
-```
-
----
-
-## Prerequisites 🔧
-- Install Zig and put it on your `PATH` (https://ziglang.org/download).
-- Rust toolchain installed with `rustup`.
-- Add the target you want to build:
+1. Install Zig and add it to your `PATH`: https://ziglang.org/download
+2. Add your target with rustup, e.g.:
 
 ```powershell
 rustup target add x86_64-unknown-linux-musl
 ```
 
----
+3. Generate wrappers in a folder on `PATH` (or into `C:\tools\zig-cross\bin`):
 
-Global Cargo config + Zig wrappers (recommended for control)
-
-1. Create a central folder for wrappers (example): `C:\tools\zig-cross\bin` and add it to your Windows `PATH`.
-
-2. Create the wrapper scripts. Example Windows CMD wrapper `zig-x86_64-linux-musl.cmd`:
-
-```bat
-@echo off
-REM Acts as a linker for cargo
-zig.exe cc -target x86_64-linux-musl -static %*
+```powershell
+# generate cmd wrappers in current dir
+cargo run --release -- generate x86_64-unknown-linux-musl --out C:\tools\zig-cross\bin --ps
 ```
 
-Example `zig-ar.cmd`:
+4. Install Cargo config for that target (writes to `%USERPROFILE%\.cargo\config.toml`):
 
-```bat
-@echo off
-zig.exe ar %*
+```powershell
+cargo run --release -- install-config x86_64-unknown-linux-musl
 ```
 
-(If you use PowerShell, you can make `.ps1` wrapper versions; for WSL/Linux use a small shell script calling `zig cc -target ...`.)
-
-3. Create a **global Cargo config** (applies to all projects) at `%USERPROFILE%\.cargo\config.toml` with the target section:
-
-```toml
-[target.x86_64-unknown-linux-musl]
-linker = "zig-x86_64-linux-musl"
-ar = "zig-ar"
-rustflags = ["-C", "target-feature=+crt-static"]
-```
-
-- The `linker` and `ar` must be resolvable on `PATH` and match the wrapper filenames.
-
-4. Build in any project:
+5. Now you can build your project for the target:
 
 ```powershell
 cargo build --release --target x86_64-unknown-linux-musl
 ```
 
----
+## Commands
+- `generate <target>`: create `zig-<target>.cmd` and `zig-ar.cmd` (optionally PowerShell `.ps1` wrappers with `--ps`).
+- `install-config <target>`: append a `[target.<target>]` section to `%USERPROFILE%\.cargo\config.toml` with proper `linker` and `ar` (and recommended `rustflags` for musl).
+- `check-zig`: verify whether `zig` is available on `PATH`.
+
+## Publishing to crates.io 📦
+- Update `Cargo.toml` metadata (`name = "yy"`, `description`, `license`, `repository`) and ensure `README.md` is present.
+- Create an account on crates.io and `cargo login` with your API token.
+- Run `cargo publish --allow-dirty` (or ensure the repo is clean) to publish the crate.
 
 ## Troubleshooting & Tips ⚠️
-- "linker not found": ensure wrapper name and location are on `PATH` and match the `linker` setting.
-- Static linking: when targeting `*-musl`, you may need `-C target-feature=+crt-static` (`rustflags`) to avoid dynamic glibc.
-- If Rust crates require system libraries, ensure they are available in the Zig sysroot or avoid those crates.
-- Add other targets by creating additional wrapper scripts and Cargo `target.*` sections.
+- If wrappers are invoked but `zig.exe` is not found, add Zig's bin folder to `PATH`.
+- When targeting `*-musl`, static linking (`rustflags = ["-C", "target-feature=+crt-static"]`) helps avoid needing glibc on the target.
 
----
-
-If you'd like, use can use the sample scripts and a copyable `config.toml` in this repo.
-
-An example project is placed here.
-
-
-![gplv3](https://gnu.ac.cn/graphics/gplv3-rounded-grey-180x60.jpg)
