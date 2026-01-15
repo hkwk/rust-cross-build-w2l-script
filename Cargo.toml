@@ -5,7 +5,7 @@ edition = "2024"
 description = "Helper CLI to create Zig-based cross-linker wrappers and Cargo config for cross-compiling Rust from Windows to Linux"
 license = "GPL-3.0-or-later"
 readme = "README.md"
-repository = "https://github.com/hkwk/yy"
+repository = "https://git.sr.ht/~hkl/yy"
 keywords = ["cross", "cross-compilation", "windows", "linux", "musl"]
 categories = ["development-tools"]
 
