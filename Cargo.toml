@@ -6,7 +6,7 @@ description = "Helper CLI to create Zig-based cross-linker wrappers and Cargo co
 license = "GPL-3.0-or-later"
 readme = "README.md"
 repository = "https://github.com/hkwk/yy"
-keywords = ["cross", "zig", "cross-compilation", "windows", "linux", "musl"]
+keywords = ["cross", "cross-compilation", "windows", "linux", "musl"]
 categories = ["development-tools"]
 
 [dependencies]
